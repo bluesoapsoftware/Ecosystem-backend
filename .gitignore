@@ -1,0 +1,64 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+dist/
+build/
+
+# --- Virtual Environments ---
+venv/
+env/
+.venv/
+
+# --- Environment Variables ---
+.env
+.env.*
+*.env
+
+# --- Secrets & Keys ---
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.jks
+
+# --- Database Files ---
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+*.bak
+
+# --- Logs ---
+logs/
+*.log
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+
+# --- PM2 ---
+.pm2/
+
+# --- NGINX / Server Config Backups ---
+nginx.conf
+*.conf.backup
+
+# --- Node (if used for agents or tooling) ---
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# --- Cache ---
+.cache/
