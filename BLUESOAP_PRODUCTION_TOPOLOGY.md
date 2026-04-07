@@ -94,11 +94,11 @@ Verified by SSH:
   - conflicting server name `api.bluesoapsoftware.com` on port 80
 
 #### Current proxy behavior
-Current nginx config proxies:
-- `api.bluesoapsoftware.com` -> `http://127.0.0.1:8000`
+Canonical live nginx config now proxies:
+- `api.bluesoapsoftware.com` -> `http://172.31.34.85:8080`
 
 #### Interpretation
-The NGINX host is configured as if the FastAPI backend is local to the same machine, which conflicts with the current note that places FastAPI on the prod host.
+The NGINX host is now correctly configured to reverse proxy to the FastAPI host over the AWS private network.
 
 ## Current Intended Architecture
 Based on notes and naming, the intended architecture appears to be:
@@ -114,11 +114,12 @@ What is actually verified right now:
 - static assets and public web delivery exist in AWS via S3 and CloudFront
 - a dedicated NGINX host exists and is active
 - a dedicated backend-labeled host exists and is running Python app processes
+- NGINX now proxies to the FastAPI host over private IP on port `8080`
 - RDS, SES, and Route 53 are all present and live
 
 ## Drift / Inconsistencies To Resolve
 ### 1. Service-name drift
-Workspace config and deploy scripts assume:
+Workspace config and old deploy scripts assumed:
 - service name: `bluesoap`
 
 Live host shows:
@@ -126,31 +127,23 @@ Live host shows:
 - no active `bluesoap` service under that name
 
 ### 2. Deploy-root drift
-Workspace config assumes:
+Workspace config previously assumed:
 - `/home/ubuntu/bluesoap`
 
-Live host shows processes from:
+Live host shows runtime processes from:
 - `/opt/bluesoap`
 
-### 3. Reverse-proxy drift
-Credentials note says:
-- FastAPI on `bluesoap-backend-prod`
-- NGINX on `bluesoap-backend-secure`
-
-Live NGINX config says:
-- proxy to `127.0.0.1:8000`
-
-That implies either:
-- the NGINX config is stale
-- the backend moved
-- the intended upstream should be a private-IP target instead of localhost
-- both hosts currently contain overlapping partial setups
-
-### 4. Documentation drift
+### 3. Documentation drift
 Several deployment artifacts still reflect older or mixed infrastructure assumptions, including:
 - stale service names
 - pre-AWS or transitional deployment logic
 - old BlueHost-era scripts
+- old nginx backup config that previously targeted unrelated localhost services
+
+### 4. Remaining edge cleanup
+Live NGINX traffic has been corrected, but backup and disabled config files still exist for rollback/reference:
+- `api.bluesoapsoftware.com.conf.bak`
+- `bluesoap.conf.disabled-2026-04-07`
 
 ## Operational Conclusion
 The AWS foundation is real and healthy.

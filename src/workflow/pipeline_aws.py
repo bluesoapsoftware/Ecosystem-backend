@@ -213,12 +213,13 @@ class BlueSoapPipeline:
                     
                 # Remote Commands
                 print(f"      + Installing & Restarting...")
+                host_service = inst.get("service_name", service)
                 commands = [
                     f"mkdir -p {remote_dir}",
                     f"unzip -o /tmp/backend_deploy.zip -d {remote_dir}",
                     f"/opt/bluesoap/venv/bin/pip install -r {remote_dir}/requirements.txt",
-                    f"sudo systemctl restart {service}",
-                    f"sudo systemctl status {service} --no-pager"
+                    f"sudo systemctl restart {host_service}",
+                    f"sudo systemctl status {host_service} --no-pager"
                 ]
                 
                 for cmd in commands:
@@ -234,6 +235,14 @@ class BlueSoapPipeline:
                 print(f"      + {ip}: Deployment Successful.")
                 if inst.get("role") == "fastapi":
                     print("      + Verified target role: fastapi (canonical service expected: executive-api).")
+                    validate_cmds = [
+                        "curl -o /dev/null -s -w '%{http_code}' http://127.0.0.1:8080/docs",
+                        "curl -o /dev/null -s -w '%{http_code}' http://127.0.0.1:8080/openapi.json"
+                    ]
+                    for vcmd in validate_cmds:
+                        stdin, stdout, stderr = ssh.exec_command(vcmd)
+                        code = stdout.read().decode().strip()
+                        print(f"      + Validation {vcmd.split('/')[-1]} => {code}")
                 ssh.close()
                 
             except Exception as e:

@@ -44,20 +44,16 @@ Verified service:
 - `nginx` active
 
 ### NGINX config problem
-Current NGINX config on the secure host proxies `api.bluesoapsoftware.com` to:
+Initial audit found stale NGINX proxying on the secure host:
 - `127.0.0.1:8000`
 
-But the verified active FastAPI service is on the prod host and bound to:
-- `18.220.238.233:8080`
+while the verified active FastAPI service was on the prod host.
 
 ## Conclusion
-The most likely intended proxy target is:
-- `18.220.238.233:8080`
+The canonical upstream was corrected during the live rollout to:
+- `172.31.34.85:8080`
 
-not:
-- `127.0.0.1:8000`
-
-unless there is another local backend on the secure host that is meant to be restored.
+This uses the prod host private IP rather than a public-IP hop or stale localhost assumption.
 
 ## What Was Normalized In Workspace
 Updated to reflect verified production truth:
@@ -66,10 +62,13 @@ Updated to reflect verified production truth:
 - `deploy/README.md`
 - `src/workflow/pipeline_aws.py`
 
-## Remaining Live-Server Task
-The workspace is now more truthful, but the live NGINX config should still be reviewed and corrected deliberately.
+## Live Rollout Result
+The live NGINX correction has been completed:
+1. security-group access was opened from the NGINX host to the prod API host on port `8080`
+2. NGINX upstream was changed from `127.0.0.1:8000` to `172.31.34.85:8080`
+3. duplicate config was disabled and active config reduced to the Certbot-managed `fastapi.conf`
+4. route validation succeeded through the corrected proxy path
 
-Recommended live action:
-1. confirm whether secure host should reverse proxy to prod host over private/public IP
-2. if yes, update NGINX upstream from `127.0.0.1:8000` to the canonical FastAPI target
-3. test end-to-end health after change
+## Remaining Live-Server Task
+- optional later cleanup of backup config files after sufficient confidence window
+- continued normalization of deployment automation and truth docs

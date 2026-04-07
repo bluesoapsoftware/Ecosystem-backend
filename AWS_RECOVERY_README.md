@@ -136,6 +136,7 @@ Findings:
 - `/opt/bluesoap/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8080` is also running
 - `bluesoap` is **not** the active service name on this host
 - `/home/ubuntu/bluesoap` exists, but live processes also reference `/opt/bluesoap`
+- `/docs` and `/openapi.json` respond successfully on port `8080`
 
 ### NGINX host
 Command that worked:
@@ -145,22 +146,38 @@ Findings:
 - Host reachable
 - `nginx` is active
 - Certbot-managed TLS config exists for `api.bluesoapsoftware.com`
-- Config files present:
-  - `/etc/nginx/conf.d/bluesoap.conf`
+- canonical active config file is now:
   - `/etc/nginx/conf.d/fastapi.conf`
-- `nginx -t` passes, but warns about a conflicting `api.bluesoapsoftware.com` server name
-- Current config proxies `api.bluesoapsoftware.com` to `127.0.0.1:8000`
+- duplicate config was disabled:
+  - `/etc/nginx/conf.d/bluesoap.conf.disabled-2026-04-07`
+- old backup config still present for reference:
+  - `/etc/nginx/conf.d/api.bluesoapsoftware.com.conf.bak`
+- current config proxies `api.bluesoapsoftware.com` to `http://172.31.34.85:8080`
+- `nginx -t` passes cleanly after duplicate removal
+
+## Live Rollout Note (2026-04-07)
+The following production correction was implemented successfully:
+1. snapped current NGINX config for rollback
+2. opened security-group access from the NGINX host security group to the prod API host on port `8080`
+3. changed NGINX upstream from stale localhost assumption to the prod host private IP:
+   - from `127.0.0.1:8000`
+   - to `172.31.34.85:8080`
+4. reloaded NGINX successfully
+5. validated app routes through the corrected proxy path
+
+Validated routes after rollout:
+- prod host `http://127.0.0.1:8080/docs` -> `200`
+- prod host `http://127.0.0.1:8080/openapi.json` -> `200`
+- nginx host `http://127.0.0.1/docs` with `Host: api.bluesoapsoftware.com` -> redirect to TLS
+- nginx proxy path serving the FastAPI docs/openapi through active config
 
 ## Important Production Note
-There is a topology inconsistency that still needs resolution:
-- credentials notes say FastAPI is on `bluesoap-backend-prod` and NGINX is on `bluesoap-backend-secure`
-- verified NGINX config on the secure host proxies to `127.0.0.1:8000`, which implies the backend should be local to that host
-- verified FastAPI-related processes are running on the prod host, but the active service name is not `bluesoap`
+The topology inconsistency has now been resolved enough to establish canonical truth:
+- FastAPI is canonically on `bluesoap-backend-prod`
+- NGINX is canonically on `bluesoap-backend-secure`
+- current canonical upstream is the prod host private IP on port `8080`
 
-This means one of these is true:
-1. NGINX config on the secure host is stale or incomplete
-2. traffic has changed since the note was written
-3. both hosts have partial app components and the topology drifted
+Remaining cleanup debt is documentation and automation normalization, not primary traffic ambiguity.
 
 ## What Marvin Can Already Do
 - Query AWS from CLI

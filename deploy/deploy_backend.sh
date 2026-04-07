@@ -42,7 +42,7 @@ fi
 
 # 2. Install Dependencies
 log "INFO: Installing Python dependencies..."
-# Assuming venv is used
+# Canonical runtime venv verified on production host
 source /opt/bluesoap/venv/bin/activate
 pip install -r /opt/bluesoap/requirements.txt &>> $LOG_FILE
 
@@ -64,20 +64,16 @@ else
     exit 1
 fi
 
-# 4. Reload NGINX (if config changed, usually safe to reload anyway)
-log "INFO: Reloading NGINX..."
-sudo systemctl reload nginx &>> $LOG_FILE
-
-# 5. Health Check (Internal)
-log "INFO: Performing internal health check..."
+# 4. Health Check (Internal)
+log "INFO: Performing internal route validation..."
 sleep 5 # Give it a moment to boot
-HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}\n" http://localhost:8080/health)
+DOCS_STATUS=$(curl -o /dev/null -s -w "%{http_code}\n" http://localhost:8080/docs)
+OPENAPI_STATUS=$(curl -o /dev/null -s -w "%{http_code}\n" http://localhost:8080/openapi.json)
 
-if [ "$HTTP_STATUS" == "200" ]; then
-    log "SUCCESS: Backend is healthy (HTTP 200)."
+if [ "$DOCS_STATUS" == "200" ] && [ "$OPENAPI_STATUS" == "200" ]; then
+    log "SUCCESS: Backend route validation passed (docs/openapi)."
 else
-    log "WARNING: Backend returned HTTP $HTTP_STATUS. Check service logs."
-    # Potential rollback trigger here
+    log "WARNING: Backend validation failed. /docs=$DOCS_STATUS /openapi.json=$OPENAPI_STATUS"
     exit 1
 fi
 
