@@ -53,5 +53,10 @@
             "cloudfront_distribution_id": "TBD",
             "local_path": "src/missions"
         }
+    },
+    "container_registry": {
+        "aws_ecr_repository_name": "bluesoap-fastapi",
+        "docker_hub_repository_name": "bluesoapsoftware/bluesoap-fastapi",
+        "google_artifact_registry_name": "bluesoap-fastapi"
     }
 }
