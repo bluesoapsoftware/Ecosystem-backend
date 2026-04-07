@@ -31,12 +31,12 @@ class BlueSoapPipeline:
 
     def _get_s3(self):
         if not self.s3_client:
-            self.s3_client = boto3.client('s3', region_name=self.config.get("aws_region", "us-east-1"))
+            self.s3_client = boto3.client('s3', region_name=self.config.get("aws_region", "us-east-2"))
         return self.s3_client
 
     def _get_cf(self):
         if not self.cf_client:
-            self.cf_client = boto3.client('cloudfront', region_name=self.config.get("aws_region", "us-east-1"))
+            self.cf_client = boto3.client('cloudfront', region_name=self.config.get("aws_region", "us-east-2"))
         return self.cf_client
 
     def deploy_frontend(self, target="production"):
