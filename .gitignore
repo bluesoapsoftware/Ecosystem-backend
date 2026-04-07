@@ -1,43 +1,71 @@
 # Secrets and credentials
 .env
 .env.*
+*.env
 !.env.template
 credentials.json
 token.json
 gmail_token.pkl
 *.pem
 *.ppk
+*.key
+*.crt
+*.csr
+*.p12
+*.jks
 secrets/
 
 # Python
 __pycache__/
-*.py[cod]
+*.pyc
 *.pyo
 *.pyd
+*.py[cod]
+*.pdb
+*.egg-info/
+*.egg
+dist/
+build/
 .venv/
 venv/
+env/
 .venv_broken_*/
 .pytest_cache/
+.cache/
 
 # Node
 node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Databases and dumps
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+*.bak
+*.csv
 
 # Logs and runtime
-*.log
 logs/
+*.log
 tmp/
+.pm2/
+
+# Server config backups
+nginx.conf
+*.conf.backup
 
 # OS / editor
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+*.swp
 
 # Archives and bulky exports
 *.zip
-*.db
-*.sqlite
-*.csv
 
 # Local backups
 Backups/
