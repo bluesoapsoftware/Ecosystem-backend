@@ -1,0 +1,57 @@
+{
+    "aws_region": "us-east-2",
+    "frontend": {
+        "production": {
+            "s3_bucket": "bluesoapsoftware.com",
+            "cloudfront_distribution_id": "E2XMTEHNM5MT92",
+            "local_path": "src/static"
+        },
+        "watchtower": {
+            "s3_bucket": "bluesoap-frontend",
+            "cloudfront_distribution_id": "",
+            "local_path": "src/static/clients"
+        }
+    },
+    "backend": {
+        "ec2_instances": [
+            {
+                "id": "i-022198f3848ef0f10",
+                "ip": "18.220.238.233",
+                "name": "bluesoap-backend-prod",
+                "user": "ubuntu",
+                "key_path": "bluesoap-key.pem",
+                "role": "fastapi",
+                "service_name": "executive-api",
+                "app_port": 8080,
+                "working_directory": "/home/ubuntu/executive_api",
+                "runtime_root": "/opt/bluesoap"
+            },
+            {
+                "id": "i-06df34f17c69d0c7a",
+                "ip": "3.23.130.217",
+                "name": "bluesoap-backend-secure",
+                "user": "ec2-user",
+                "key_path": "bluesoap-key.pem",
+                "role": "nginx",
+                "proxy_target_host": "18.220.238.233",
+                "proxy_target_port": 8080
+            }
+        ],
+        "remote_path": "/opt/bluesoap",
+        "service_name": "executive-api"
+    },
+    "database": {
+        "host": "bluesoap-ecosystem.cjekqqkgudsq.us-east-2.rds.amazonaws.com",
+        "port": 3306,
+        "engine": "mysql",
+        "user": "admin",
+        "resource_id": "db-G45IIPPBL7WNZLQCQBCCHJQVRY"
+    },
+    "client_projects": {
+        "big_love": {
+            "s3_bucket": "biglove-ministries-assets",
+            "cloudfront_distribution_id": "TBD",
+            "local_path": "src/missions"
+        }
+    }
+}

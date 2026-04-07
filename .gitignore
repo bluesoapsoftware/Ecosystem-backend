@@ -1,0 +1,43 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.template
+credentials.json
+token.json
+gmail_token.pkl
+*.pem
+*.ppk
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.venv_broken_*/
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Logs and runtime
+*.log
+logs/
+tmp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Archives and bulky exports
+*.zip
+*.db
+*.sqlite
+*.csv
+
+# Local backups
+Backups/
