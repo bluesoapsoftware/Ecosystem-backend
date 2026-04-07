@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+env/
+venv/
+pip-wheel-metadata/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Git
+.git
+.gitignore
+
+# OpenClaw Specific (local development artifacts)
+.openclaw/
+workspace/
+agent_configs/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.zip # Exclude deployment zips
+*.log # Exclude log files
