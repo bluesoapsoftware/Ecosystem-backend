@@ -95,8 +95,6 @@ resource "aws_cloudfront_distribution" "lotr_cdn" {
     cloudfront_default_certificate = true # Use CloudFront's default SSL for now (requires custom cert later)
   }
 
-  # Add domain aliases for custom domain
-  aliases = ["lifeontherock.org", "www.lifeontherock.org"]
 
   tags = {
     Name        = "lifeontherock.org-cdn"
