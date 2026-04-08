@@ -169,6 +169,146 @@ resource "aws_route_table_association" "bluesoap_private_rt_assoc_az2" {
   route_table_id = aws_route_table.bluesoap_private_rt.id
 }
 
+# 11. Security Group for Management (SSH access to bastion/management servers)
+resource "aws_security_group" "bluesoap_sg_management" {
+  name        = "bluesoap-sg-management"
+  description = "Allow SSH from anywhere (TEMPORARY - RESTRICT THIS SOON)" # TEMPORARY
+  vpc_id      = aws_vpc.bluesoap_vpc.id
+
+  ingress {
+    description = "SSH from everywhere (TEMPORARY)"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # WARNING: This should be restricted to known IPs!
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "bluesoap-sg-management"
+    Project     = "BlueSoap"
+    ManagedBy   = "Terraform"
+    Environment = "Production"
+  }
+}
+
+# 12. Security Group for FastAPI Backend
+resource "aws_security_group" "bluesoap_sg_fastapi" {
+  name        = "bluesoap-sg-fastapi"
+  description = "Allow inbound FastAPI traffic from NGINX and SSH from management SG."
+  vpc_id      = aws_vpc.bluesoap_vpc.id
+
+  ingress {
+    description = "Allow FastAPI port from NGINX Security Group"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    security_groups = [aws_security_group.bluesoap_sg_nginx.id]
+  }
+
+  ingress {
+    description     = "SSH from Management Security Group"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bluesoap_sg_management.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "bluesoap-sg-fastapi"
+    Project     = "BlueSoap"
+    ManagedBy   = "Terraform"
+    Environment = "Production"
+  }
+}
+
+# 13. Security Group for NGINX Reverse Proxy
+resource "aws_security_group" "bluesoap_sg_nginx" {
+  name        = "bluesoap-sg-nginx"
+  description = "Allow HTTP/HTTPS from internet, and SSH from management SG."
+  vpc_id      = aws_vpc.bluesoap_vpc.id
+
+  ingress {
+    description = "HTTP from Internet"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS from Internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description     = "SSH from Management Security Group"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bluesoap_sg_management.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "bluesoap-sg-nginx"
+    Project     = "BlueSoap"
+    ManagedBy   = "Terraform"
+    Environment = "Production"
+  }
+}
+
+# 14. Security Group for RDS Database
+resource "aws_security_group" "bluesoap_sg_rds" {
+  name        = "bluesoap-sg-rds"
+  description = "Allow MySQL traffic from FastAPI Security Group."
+  vpc_id      = aws_vpc.bluesoap_vpc.id
+
+  ingress {
+    description = "Allow MySQL from FastAPI Security Group"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    security_groups = [aws_security_group.bluesoap_sg_fastapi.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "bluesoap-sg-rds"
+    Project     = "BlueSoap"
+    ManagedBy   = "Terraform"
+    Environment = "Production"
+  }
+}
+
 # Output VPC and Subnet IDs
 output "vpc_id" {
   description = "The ID of the main VPC."
@@ -183,4 +323,24 @@ output "public_subnet_ids" {
 output "private_subnet_ids" {
   description = "List of IDs of the private subnets."
   value       = [aws_subnet.bluesoap_private_subnet_az1.id, aws_subnet.bluesoap_private_subnet_az2.id]
+}
+
+output "sg_management_id" {
+  description = "The ID of the management security group."
+  value       = aws_security_group.bluesoap_sg_management.id
+}
+
+output "sg_fastapi_id" {
+  description = "The ID of the FastAPI security group."
+  value       = aws_security_group.bluesoap_sg_fastapi.id
+}
+
+output "sg_nginx_id" {
+  description = "The ID of the NGINX security group."
+  value       = aws_security_group.bluesoap_sg_nginx.id
+}
+
+output "sg_rds_id" {
+  description = "The ID of the RDS security group."
+  value       = aws_security_group.bluesoap_sg_rds.id
 }
