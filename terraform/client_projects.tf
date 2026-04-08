@@ -107,19 +107,23 @@ resource "aws_cloudfront_distribution" "lotr_cdn" {
   }
 }
 
-# 4. Route 53 DNS Records (Assumes lifeontherock.org's Hosted Zone exists or will be created)
-# Need Hosted Zone ID for lifeontherock.org
-# This will require manual input or a data lookup, or creation of a new hosted zone
+# 4. Route 53 DNS Records
+# We will create a new Route 53 Hosted Zone for lifeontherock.org
 
-# Placeholder for Hosted Zone ID (if it exists) or new resource
-variable "lifeontherock_hosted_zone_id" {
-  description = "The Route 53 Hosted Zone ID for lifeontherock.org."
-  type        = string
-  # No default, must be provided or linked to an existing resource
+resource "aws_route53_zone" "lifeontherock_hosted_zone" {
+  name = "lifeontherock.org"
+
+  tags = {
+    Name        = "lifeontherock.org-hosted-zone"
+    Project     = "LifeOnTheRockInternational"
+    ManagedBy   = "Terraform"
+    Environment = "Production"
+    Client      = "JohnMoreland"
+  }
 }
 
 resource "aws_route53_record" "lotr_apex" {
-  zone_id = var.lifeontherock_hosted_zone_id
+  zone_id = aws_route53_zone.lifeontherock_hosted_zone.zone_id
   name    = "lifeontherock.org"
   type    = "A"
 
@@ -131,7 +135,7 @@ resource "aws_route53_record" "lotr_apex" {
 }
 
 resource "aws_route53_record" "lotr_www" {
-  zone_id = var.lifeontherock_hosted_zone_id
+  zone_id = aws_route53_zone.lifeontherock_hosted_zone.zone_id
   name    = "www.lifeontherock.org"
   type    = "A"
 
@@ -146,4 +150,10 @@ resource "aws_route53_record" "lotr_www" {
 output "lotr_cloudfront_domain_name" {
   description = "The domain name of the Life on the Rock CloudFront distribution."
   value       = aws_cloudfront_distribution.lotr_cdn.domain_name
+}
+
+# Output Route 53 Name Servers (CRITICAL for domain transfer)
+output "lotr_nameservers" {
+  description = "The Name Servers for lifeontherock.org Hosted Zone. Update your domain registrar with these!"
+  value       = aws_route53_zone.lifeontherock_hosted_zone.name_servers
 }
