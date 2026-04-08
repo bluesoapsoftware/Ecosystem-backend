@@ -7,7 +7,7 @@ resource "aws_iam_user" "agent_delta" {
 
   tags = {
     Project     = "BlueSoap"
-    Role        = "Monitoring & Diagnostics"
+    Role        = "MonitoringAndDiagnostics"
     ManagedBy   = "Terraform"
     Environment = "Production"
   }
